@@ -7,7 +7,6 @@
 #include "PlatformVideo.h"
 
 void ofApp::setup() {
-	// Uncapped loop + no vsync: MF drives A/V timing; we pump decode events as fast as possible.
 	ofSetVerticalSync(false);
 	ofSetFrameRate(0);
 	ofBackground(0);
@@ -21,12 +20,17 @@ void ofApp::setup() {
 	playButton.addListener(this, &ofApp::onPlayPressed);
 	cycleButton.addListener(this, &ofApp::onCyclePressed);
 	stopButton.addListener(this, &ofApp::onStopPressed);
+	subtitlesToggle.addListener(this, &ofApp::onSubtitlesToggled);
 
 	gui.setup("Controls");
 	gui.add(playButton.setup("Play"));
 	gui.add(cycleButton.setup("Next Video"));
 	gui.add(stopButton.setup("Stop"));
+	gui.add(subtitlesToggle.setup("Subtitles", false));
 	gui.add(statusLabel.setup("clip", ""));
+
+	subtitles.setup();
+	syncSubtitleText();
 
 	videoPanel.setup();
 	refreshStatusLabel();
@@ -36,6 +40,7 @@ void ofApp::exit() {
 	playButton.removeListener(this, &ofApp::onPlayPressed);
 	cycleButton.removeListener(this, &ofApp::onCyclePressed);
 	stopButton.removeListener(this, &ofApp::onStopPressed);
+	subtitlesToggle.removeListener(this, &ofApp::onSubtitlesToggled);
 }
 
 void ofApp::onPlayPressed() {
@@ -45,12 +50,25 @@ void ofApp::onPlayPressed() {
 
 void ofApp::onCyclePressed() {
 	videoPanel.cycleNext();
+	syncSubtitleText();
 	refreshStatusLabel();
 }
 
 void ofApp::onStopPressed() {
 	videoPanel.stop();
 	refreshStatusLabel();
+}
+
+void ofApp::onSubtitlesToggled(bool& value) {
+	subtitles.setEnabled(value);
+}
+
+void ofApp::syncSubtitleText() {
+	if (videoPanel.isLoaded()) {
+		subtitles.setText(videoPanel.getLoadedPath());
+	} else {
+		subtitles.setText("Sample subtitle");
+	}
 }
 
 void ofApp::refreshStatusLabel() {
@@ -72,6 +90,7 @@ void ofApp::update() {
 void ofApp::draw() {
 	ofSetColor(255);
 	videoPanel.draw(panelBounds);
+	subtitles.draw(panelBounds);
 
 	if (!videoPanel.isLoaded()) {
 		ofSetColor(255);
