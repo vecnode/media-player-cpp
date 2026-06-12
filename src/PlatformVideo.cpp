@@ -48,9 +48,18 @@ void configurePlayer(ofVideoPlayer& player) {
 	} else {
 		tuneMediaFoundationPlayer(backend);
 	}
-	ofLogNotice("PlatformVideo") << "Video backend: Media Foundation (Windows, HW texture path)";
+
+	static bool loggedBackend = false;
+	if (!loggedBackend) {
+		ofLogNotice("PlatformVideo") << "Video backend: Media Foundation (Windows, HW texture path)";
+		loggedBackend = true;
+	}
 #else
-	ofLogNotice("PlatformVideo") << "Video backend: openFrameworks default";
+	static bool loggedBackend = false;
+	if (!loggedBackend) {
+		ofLogNotice("PlatformVideo") << "Video backend: openFrameworks default";
+		loggedBackend = true;
+	}
 #endif
 }
 
@@ -72,8 +81,8 @@ void primeFirstFrame(ofVideoPlayer& player) {
 #ifdef TARGET_WIN32
 	player.setPaused(true);
 
-	// MF delivers the first frame asynchronously after Load().
-	for (int i = 0; i < 120 && !hasPresentableFrame(player); ++i) {
+	// MF delivers the first frame asynchronously after Load(); keep this short (non-blocking).
+	for (int i = 0; i < 30 && !hasPresentableFrame(player); ++i) {
 		player.update();
 	}
 #else

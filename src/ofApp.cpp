@@ -7,9 +7,10 @@
 #include "PlatformVideo.h"
 
 void ofApp::setup() {
-	ofSetVerticalSync(true);
-	ofSetFrameRate(60);
-	ofBackground(40);
+	// Uncapped loop + no vsync: MF drives frame timing; the app pumps decode events as fast as possible.
+	ofSetVerticalSync(false);
+	ofSetFrameRate(0);
+	ofBackground(0);
 
 #ifdef TARGET_WIN32
 	PlatformVideo::configureDataPathRoot();
@@ -69,6 +70,7 @@ void ofApp::update() {
 }
 
 void ofApp::draw() {
+	ofSetColor(255);
 	videoPanel.draw(panelBounds);
 
 	if (!videoPanel.isLoaded()) {
